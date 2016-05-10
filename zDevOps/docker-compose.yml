@@ -1,0 +1,133 @@
+zos:
+  log_driver: ''
+  tty: true
+  log_opt: {}
+  image: dcalvez/zos-8:v1
+  stdin_open: true
+devstack-web-z:
+  ports:
+  - 82:80/tcp
+  environment:
+    HOME: /home/app
+    BUNDLE_APP_CONFIG: /usr/local/bundle
+    RUBY_MAJOR: '2.2'
+    PATH: /usr/local/bundle/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+    RUBY_VERSION: 2.2.0
+    GEM_HOME: /usr/local/bundle
+    RAILS_ENV: production
+    SECRET_KEY_BASE: $$(openssl rand -base64 32)
+  log_driver: ''
+  labels:
+    io.rancher.container.start_once: 'true'
+  tty: true
+  command:
+  - bundle
+  - exec
+  - foreman
+  - start
+  - -f
+  - Procfile
+  log_opt: {}
+  image: hub.devstack.com:5000/devstack-web/rails:v10
+  links:
+  - jenkins-Z-devops2:jenkins
+  working_dir: /home/app
+  stdin_open: true
+  net: bridge
+zostest3:
+  ports:
+  - 59568:3270/tcp
+  environment:
+    PATH: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+  log_driver: ''
+  labels:
+    io.rancher.container.start_once: 'true'
+    io.rancher.container.requested_ip: 172.20.105.110
+  tty: true
+  command:
+  - /bin/sh
+  - -c
+  - /bin/initrdt
+  log_opt: {}
+  image: dcalvez/zos-8:v1
+  volumes:
+  - /tmp/project:/home/ibmsys/z1090/disks/project
+  - /tmp/:/home/ibmsys/z1090/disks/
+  privileged: true
+  working_dir: /home/ibmsys
+  stdin_open: true
+zostest2:
+  ports:
+  - 3273:3270/tcp
+  environment:
+    PATH: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+  log_driver: ''
+  labels:
+    io.rancher.container.start_once: 'true'
+    io.rancher.container.requested_ip: 172.20.105.110
+  tty: true
+  command:
+  - /bin/sh
+  - -c
+  - /bin/initrdt
+  log_opt: {}
+  image: dcalvez/zos-8:v1
+  privileged: true
+  volumes:
+  - /tmp/project:/home/ibmsys/z1090/disks/project
+  - /tmp/:/home/ibmsys/z1090/disks/
+  working_dir: /home/ibmsys
+  stdin_open: true
+zostest4:
+  environment:
+    PATH: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+  log_driver: ''
+  labels:
+    io.rancher.container.start_once: 'true'
+  tty: true
+  command:
+  - /bin/sh
+  - -c
+  - /bin/initrdt
+  log_opt: {}
+  image: dcalvez/zos-8:v1
+  volumes:
+  - /tmp/project:/home/ibmsys/z1090/disks/project
+  - /tmp/:/home/ibmsys/z1090/disks/
+  privileged: true
+  working_dir: /home/ibmsys
+  net: bridge
+  stdin_open: true
+jenkins-Z-devops2:
+  ports:
+  - 9977:8080/tcp
+  - 50000:50000/tcp
+  environment:
+    JENKINS_HOME: /var/jenkins_home
+    JENKINS_UC: https://updates.jenkins-ci.org
+    JAVA_HOME: /usr/lib/jvm/java-8-openjdk-amd64
+    JAVA_DEBIAN_VERSION: 8u66-b17-1~bpo8+1
+    JENKINS_SLAVE_AGENT_PORT: '50000'
+    CA_CERTIFICATES_JAVA_VERSION: '20140324'
+    PATH: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+    JENKINS_SHA: 537d910f541c25a23499b222ccd37ca25e074a0c
+    JAVA_VERSION: 8u66
+    COPY_REFERENCE_FILE_LOG: /var/jenkins_home/copy_reference_file.log
+    TINI_SHA: 066ad710107dc7ee05d3aa6e4974f01dc98f3888
+    LANG: C.UTF-8
+    JENKINS_VERSION: 1.625.3
+  log_driver: ''
+  labels:
+    io.rancher.container.start_once: 'true'
+  tty: true
+  entrypoint:
+  - /bin/tini
+  - --
+  - /usr/local/bin/jenkins.sh
+  log_opt: {}
+  image: hub.devstack.com:5000/jenkins-master
+  volumes:
+  - /var/jenkins_home
+  - /home/jenkins_home:/var/jenkins_home
+  net: bridge
+  stdin_open: true
